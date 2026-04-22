@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trojan Referral Request Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #990000 0%, #FFCC00 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #990000;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #990000;
+        }
+        
+        .api-key-container {
+            position: relative;
+        }
+        
+        .toggle-key {
+            position: absolute;
+            right: 12px;
+            top: 38px;
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        button {
+            background: #990000;
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            background: #770000;
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .output {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 6px;
+            border-left: 4px solid #990000;
+            display: none;
+        }
+        
+        .output.show {
+            display: block;
+        }
+        
+        .output h3 {
+            color: #990000;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .message-box {
+            background: white;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .message-box h4 {
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .message-text {
+            white-space: pre-wrap;
+            color: #555;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .char-count {
+            text-align: right;
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+        
+        .copy-btn {
+            background: #FFCC00;
+            color: #333;
+            padding: 8px 16px;
+            font-size: 13px;
+            margin-top: 10px;
+            width: auto;
+        }
+        
+        .copy-btn:hover {
+            background: #FFD700;
+        }
+        
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 15px;
+            font-size: 14px;
+            display: none;
+        }
+        
+        .error.show {
+            display: block;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #990000;
+            font-weight: 600;
+            margin-top: 15px;
+            display: none;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✉️ Trojan Referral Request</h1>
+        <p class="subtitle">Generate professional LinkedIn connection requests for USC alumni</p>
+        
+        <div class="input-group api-key-container">
+            <label for="apiKey">Anthropic API Key</label>
+            <input type="password" id="apiKey" placeholder="sk-ant-...">
+            <button class="toggle-key" onclick="toggleApiKey()">Show</button>
+        </div>
+        
+        <div class="input-group">
+            <label for="company">Company Name [X]</label>
+            <input type="text" id="company" placeholder="e.g., Meta">
+        </div>
+        
+        <div class="input-group">
+            <label for="role">Role [Y]</label>
+            <input type="text" id="role" placeholder="e.g., Software Engineer">
+        </div>
+        
+        <div class="input-group">
+            <label for="location">Location</label>
+            <input type="text" id="location" placeholder="e.g., NYC" value="NYC">
+        </div>
+        
+        <button onclick="generateMessages()">Generate Messages</button>
+        
+        <div class="loading" id="loading">Generating...</div>
+        <div class="error" id="error"></div>
+        
+        <div class="output" id="output">
+            <h3>📧 Full InMail / Message</h3>
+            <div class="message-box">
+                <div class="message-text" id="fullMessage"></div>
+                <button class="copy-btn" onclick="copyText('fullMessage')">Copy</button>
+            </div>
+            
+            <h3>💬 Short Connection Note (300 char limit)</h3>
+            <div class="message-box">
+                <div class="message-text" id="shortMessage"></div>
+                <div class="char-count" id="charCount"></div>
+                <button class="copy-btn" onclick="copyText('shortMessage')">Copy</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function toggleApiKey() {
+            const input = document.getElementById('apiKey');
+            const btn = event.target;
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.textContent = 'Hide';
+            } else {
+                input.type = 'password';
+                btn.textContent = 'Show';
+            }
+        }
+        
+        async function generateMessages() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const company = document.getElementById('company').value.trim();
+            const role = document.getElementById('role').value.trim();
+            const location = document.getElementById('location').value.trim();
+            
+            const errorEl = document.getElementById('error');
+            const loadingEl = document.getElementById('loading');
+            const outputEl = document.getElementById('output');
+            
+            errorEl.classList.remove('show');
+            outputEl.classList.remove('show');
+            
+            if (!apiKey || !company || !role || !location) {
+                errorEl.textContent = 'Please fill in all fields';
+                errorEl.classList.add('show');
+                return;
+            }
+            
+            loadingEl.classList.add('show');
+            
+            const prompt = `Generate two versions of a LinkedIn connection request message with these details:
+- Company: ${company}
+- Role: ${role}
+- Location: ${location}
+
+Use this exact structure:
+
+VERSION 1 (Full InMail):
+Subject: Fellow Trojan — ${role} at ${company}
+
+Hi [Name],
+
+I'm Dhruvin, graduating from USC's CS Master's program this May. I noticed you're working at ${company} — a role I'm actively pursuing.
+
+I interned at Amazon Redshift last summer building fault-tolerant systems, and I'm now targeting full-time ${role} positions in ${location}. Would you be open to referring me?
+
+Fight on!
+Dhruvin
+
+VERSION 2 (Short connection note under 300 characters):
+Hi [Name] — Fellow Trojan here, graduating CS Master's in May. Saw you're a ${role} at ${company}, a role I'm pursuing. Interned at Amazon Redshift last summer, now targeting ${role} roles. Would you be open to referring me? Fight on! — Dhruvin
+
+Return ONLY these two versions with "VERSION 1:" and "VERSION 2:" labels. No other text.`;
+            
+            try {
+                const response = await fetch('https://api.anthropic.com/v1/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': apiKey,
+                        'anthropic-version': '2023-06-01'
+                    },
+                    body: JSON.stringify({
+                        model: 'claude-sonnet-4-20250514',
+                        max_tokens: 500,
+                        messages: [{
+                            role: 'user',
+                            content: prompt
+                        }]
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                const text = data.content[0].text;
+                
+                const version1Match = text.match(/VERSION 1:?\s*([\s\S]*?)(?=VERSION 2:|$)/i);
+                const version2Match = text.match(/VERSION 2:?\s*([\s\S]*?)$/i);
+                
+                if (version1Match && version2Match) {
+                    const fullMsg = version1Match[1].trim();
+                    const shortMsg = version2Match[1].trim();
+                    
+                    document.getElementById('fullMessage').textContent = fullMsg;
+                    document.getElementById('shortMessage').textContent = shortMsg;
+                    document.getElementById('charCount').textContent = `${shortMsg.length} characters`;
+                    
+                    outputEl.classList.add('show');
+                } else {
+                    throw new Error('Could not parse response');
+                }
+                
+            } catch (error) {
+                errorEl.textContent = `Error: ${error.message}`;
+                errorEl.classList.add('show');
+            } finally {
+                loadingEl.classList.remove('show');
+            }
+        }
+        
+        function copyText(elementId) {
+            const text = document.getElementById(elementId).textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            });
+        }
+        
+        // Allow Enter key to submit
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') {
+                generateMessages();
+            }
+        });
+    </script>
+</body>
+</html>
